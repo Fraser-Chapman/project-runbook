@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project Runbook</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f5d50'/%3E%3Cpath d='M17 33l10 10 20-22' fill='none' stroke='%23fff' stroke-width='7' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='50' cy='14' r='5' fill='%23e9c46a'/%3E%3C/svg%3E">
+<style>
+:root { color-scheme: light; --bg:#f6f4ef; --card:#fff; --field:#fff; --ink:#1f2328; --mute:#6b7280; --line:#e4e0d6; --accent:#2f5d50; --accent-soft:#e3eee9; --warn:#b45309; --done:#2f5d50; --na:#9ca3af; --prog:#b7791f;
+  --hover:#ebe8de; --hover2:#f3f1ea; --todo-on:#eceae2; --grp:#faf9f5; --danger:#b91c1c; --danger-text:#b91c1c; }
+:root[data-theme=dark] { color-scheme: dark; --bg:#14181a; --card:#1d2225; --field:#252b2f; --ink:#e6e8ea; --mute:#9aa3ab; --line:#333b40; --accent:#3f8a73; --accent-soft:#1f3a33; --warn:#c97a1e; --done:#3f8a73; --na:#68727b; --prog:#b7791f;
+  --hover:#2a3135; --hover2:#2a3135; --todo-on:#39424a; --grp:#191e21; --danger:#c53030; --danger-text:#f28b82; }
+:root[data-theme=dark] .ans button.on[data-a=no] { background:#68727b; }
+:root[data-theme=dark] dialog::backdrop { background:rgba(0,0,0,.6); }
+* { box-sizing:border-box; }
+body { margin:0; font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+button { font:inherit; cursor:pointer; }
+header { display:flex; align-items:center; gap:10px; padding:12px 20px; background:var(--card); border-bottom:1px solid var(--line); flex-wrap:wrap; position:sticky; top:0; z-index:5; }
+header h1 { font-size:15px; margin:0 8px 0 0; letter-spacing:.02em; }
+select, input[type=text], textarea { font:inherit; color:inherit; border:1px solid var(--line); border-radius:6px; padding:6px 8px; background:var(--field); }
+select:focus, input:focus, textarea:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
+.btn { border:1px solid var(--line); background:var(--field); border-radius:6px; padding:6px 12px; }
+.btn:hover { border-color:var(--accent); }
+.btn.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+.btn.danger { color:var(--danger-text); }
+.btn.danger.armed { background:var(--danger); color:#fff; border-color:var(--danger); }
+.spacer { flex:1; }
+.layout { display:grid; grid-template-columns:230px 1fr; gap:24px; max-width:1100px; margin:0 auto; padding:20px; }
+nav { position:sticky; top:70px; align-self:start; }
+.overall { margin-bottom:16px; }
+.overall .big { font-size:26px; font-weight:600; }
+.bar { height:6px; background:var(--line); border-radius:3px; overflow:hidden; margin-top:4px; }
+.bar > i { display:block; height:100%; background:var(--accent); }
+.navitem { display:block; width:100%; text-align:left; background:none; border:0; border-radius:6px; padding:7px 10px; margin-bottom:2px; }
+.navitem:hover { background:var(--hover); }
+.navitem.active { background:var(--accent-soft); font-weight:600; }
+.navitem small { color:var(--mute); float:right; font-weight:400; }
+main h2 { margin:0 0 4px; font-size:20px; }
+.sub { color:var(--mute); margin-bottom:14px; }
+.item { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin-bottom:10px; border-left:4px solid var(--line); }
+.item.s-progress { border-left-color:var(--prog); }
+.item.s-done { border-left-color:var(--done); }
+.item.s-na { border-left-color:var(--na); opacity:.75; }
+.item .q { font-weight:600; }
+.item.s-done .q { color:var(--mute); }
+.item.s-na .q { text-decoration:line-through; color:var(--mute); }
+.hints { margin:6px 0 0; padding-left:18px; color:var(--mute); }
+.hints li { margin:1px 0; }
+.row { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; align-items:flex-start; }
+.seg { display:inline-flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+.seg button { border:0; background:var(--field); padding:5px 10px; border-right:1px solid var(--line); color:var(--mute); }
+.seg button:last-child { border-right:0; }
+.seg button:hover { background:var(--hover2); }
+.seg button.on[data-s=todo] { background:var(--todo-on); color:var(--ink); }
+.seg button.on[data-s=progress] { background:var(--prog); color:#fff; }
+.seg button.on[data-s=done] { background:var(--done); color:#fff; }
+.seg button.on[data-s=na] { background:var(--na); color:#fff; }
+.owner { width:130px; }
+.notes { flex:1; min-width:220px; resize:none; overflow:hidden; min-height:32px; }
+.add { display:flex; gap:8px; margin-top:12px; }
+.add input { flex:1; }
+.empty { text-align:center; padding:80px 20px; color:var(--mute); }
+.empty h2 { color:var(--ink); }
+dialog { background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:20px; width:min(640px,92vw); box-shadow:0 10px 40px rgba(0,0,0,.18); }
+dialog::backdrop { background:rgba(0,0,0,.3); }
+dialog h3 { margin:0 0 10px; }
+dialog label { display:block; margin:10px 0 3px; color:var(--mute); font-size:12px; }
+dialog input[type=text] { width:100%; }
+dialog textarea { width:100%; height:340px; font:12.5px/1.5 ui-monospace,Menlo,monospace; resize:vertical; }
+.actions { display:flex; gap:8px; justify-content:flex-end; margin-top:14px; align-items:center; }
+.note { color:var(--mute); font-size:12px; margin-right:auto; }
+.ans { display:inline-flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+.ans button { border:0; background:var(--field); padding:5px 10px; border-right:1px solid var(--line); color:var(--mute); }
+.ans button:last-child { border-right:0; }
+.ans button:hover { background:var(--hover2); }
+.ans button.on[data-a=yes] { background:var(--done); color:#fff; }
+.ans button.on[data-a=no] { background:#4b5563; color:#fff; }
+.ans button.on[data-a=unsure] { background:var(--warn); color:#fff; }
+.lbl { color:var(--mute); font-size:12px; align-self:center; }
+.fups { margin-top:10px; padding:8px 10px; background:var(--accent-soft); border-radius:6px; }
+.fup { display:flex; gap:8px; align-items:center; margin:4px 0; }
+.fup span { flex:0 0 auto; max-width:46%; font-size:13px; }
+.fup input { flex:1; min-width:0; }
+.fup.missing input { border-color:var(--warn); }
+.navitem.review { background:var(--field); border:1px solid var(--line); margin-bottom:10px; font-weight:600; }
+.navitem.review.active { background:var(--accent-soft); border-color:var(--accent); }
+.navitem.review small { background:var(--warn); color:#fff; border-radius:9px; padding:0 7px; }
+.rv-sec { margin:18px 0 6px; font-weight:600; }
+.rv-item { display:flex; gap:10px; align-items:baseline; background:var(--field); border:1px solid var(--line); border-radius:6px; padding:8px 12px; margin-bottom:5px; cursor:pointer; }
+.rv-item:hover { border-color:var(--accent); }
+.rv-item .why { margin-left:auto; color:var(--warn); font-size:12px; white-space:nowrap; }
+#toast { position:fixed; left:50%; top:70px; transform:translate(-50%,-20px); background:var(--accent); color:#fff; padding:10px 20px; border-radius:20px; font-weight:600; box-shadow:0 6px 24px rgba(0,0,0,.2); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:60; }
+#toast.show { opacity:1; transform:translate(-50%,0); }
+.grp { border:1px solid var(--line); border-radius:10px; padding:12px 14px 4px; margin:16px 0; background:var(--grp); }
+.grp-head { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.grp-head h3 { margin:0; font-size:16px; }
+.grp-add { margin-top:16px; padding:12px 14px; border:1px dashed var(--line); border-radius:10px; }
+.none { display:flex; gap:6px; align-items:center; margin-top:10px; color:var(--mute); }
+.btn.ok { color:var(--accent); }
+.btn.warnbtn { border-color:var(--warn); color:var(--warn); font-weight:600; }
+.autobk { background:var(--accent-soft); border-radius:8px; padding:10px 12px; margin-bottom:14px; }
+.allclear { background:var(--accent-soft); border-radius:8px; padding:20px; text-align:center; }
+@media (max-width:760px) { .layout { grid-template-columns:1fr; } nav { position:static; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Project Runbook</h1>
+  <select id="projSel" aria-label="Project"></select>
+  <button class="btn primary" id="newBtn">+ New project</button>
+  <span class="spacer"></span>
+  <button class="btn" id="exportBtn">Export Markdown</button>
+  <button class="btn" id="tplBtn">Edit template</button>
+  <button class="btn" id="bkBtn">Backup / restore</button>
+  <button class="btn" id="bkStatus" style="display:none"></button>
+  <button class="btn" id="themeBtn">Dark theme</button>
+  <button class="btn danger" id="delBtn">Delete project</button>
+</header>
+
+<div id="app"></div>
+
+<dialog id="newDlg">
+  <h3>New project</h3>
+  <label for="npName">Project name</label>
+  <input type="text" id="npName" placeholder="e.g. Payments API v2">
+  <label for="npOwner">Default owner (optional)</label>
+  <input type="text" id="npOwner" placeholder="Your name">
+  <div class="actions">
+    <button class="btn" data-close>Cancel</button>
+    <button class="btn primary" id="npCreate">Create from template</button>
+  </div>
+</dialog>
+
+<dialog id="tplDlg">
+  <h3>Template</h3>
+  <p class="sub" style="margin:0 0 8px">Nested bullets: top level = section, second level = question, third level = prompts. Start a third-level bullet with <b>If yes:</b>, <b>If no:</b> or <b>If unsure:</b> to show a follow-up field only for that answer.</p>
+  <textarea id="tplText" spellcheck="false"></textarea>
+  <div class="actions">
+    <span class="note">Changes only apply to new projects.</span>
+    <button class="btn" id="tplReset">Reset to default</button>
+    <button class="btn" data-close>Cancel</button>
+    <button class="btn primary" id="tplSave">Save template</button>
+  </div>
+</dialog>
+
+<dialog id="bkDlg">
+  <h3>Backup / restore</h3>
+  <div class="autobk">
+    <b>Automatic backup</b>
+    <div class="sub" id="autoText" style="margin:2px 0 8px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn primary" id="bkSetup">Choose backup file…</button>
+      <button class="btn" id="bkStop">Stop auto-backup</button>
+    </div>
+  </div>
+  <p class="sub" style="margin:0 0 8px"><b>To copy data out:</b> use Copy or Download. <b>To bring data in:</b> paste JSON below (or choose a file), then Import. Projects with the same ID are overwritten; others are kept.</p>
+  <textarea id="bkText" spellcheck="false"></textarea>
+  <label style="display:flex;gap:6px;align-items:center;margin-top:10px"><input type="checkbox" id="bkTpl"> Also replace my template with the one in the JSON</label>
+  <div class="actions">
+    <span class="note" id="bkMsg"></span>
+    <input type="file" id="bkFile" accept=".json,application/json" style="max-width:190px;font-size:12px">
+    <button class="btn" data-close>Close</button>
+    <button class="btn" id="bkCopy">Copy</button>
+    <button class="btn" id="bkDl">Download</button>
+    <button class="btn primary" id="bkImport">Import</button>
+  </div>
+</dialog>
+
+<dialog id="expDlg">
+  <h3>Export</h3>
+  <textarea id="expText" readonly></textarea>
+  <div class="actions">
+    <span class="note" id="expMsg"></span>
+    <button class="btn" data-close>Close</button>
+    <button class="btn" id="expCopy">Copy</button>
+    <button class="btn primary" id="expDl">Download .md</button>
+  </div>
+</dialog>
+
+<script>
+const DEFAULT_TEMPLATE = `* MVP
+   * Can we break this down into an MVP or set of MVPs/Milestones
+* Shielding
+   * Can we shield our changes? Do we need to?
+      * If yes: How (feature flag, shadow traffic, versioned API)?
+* Integrations
+   * For each integration:
+      * Who owns it?
+      * Do they know we will be integrating?
+      * Do we have someone to support us with the integration?
+         * If no: Who could we ask?
+* Data
+   * Do we need a DPIA?
+      * If yes: DPIA owner and target date
+      * If yes: Link to DPIA
+   * Do we need to update/produce a ROPA?
+      * If yes: ROPA owner and target date
+   * Retention policy
+   * Where will the data live?
+* Testing
+   * Unit/integration etc
+   * Any manual testing?
+* Observability
+   * status codes
+   * response times
+   * requests received (ops/s)?
+   * requests sent (ops/s)?
+   * tracing?
+   * application logs
+      * automated monitoring of error logs?
+   * JVM metrics?
+* Tracking
+   * Do we need to track any events?
+      * If yes: Which events and where do they land?
+   * Do we need a DPIA?
+      * If yes: DPIA owner and target date
+   * Do we need to update/produce a ROPA?
+      * If yes: ROPA owner and target date
+   * Monte Carlo monitoring of anomalies?
+      * If yes: Which tables/monitors?
+* Release
+   * Decided on release strategy
+      * If yes: Strategy, stages and rollback trigger`;
+
+const STATUSES = [['todo','To do'],['progress','In progress'],['done','Done'],['na','N/A']];
+const ANSWERS = [['yes','Yes'],['no','No'],['unsure','Unsure']];
+const KEY = 'project-runbook-v1';
+
+// ---------- storage (falls back to memory if localStorage is blocked) ----------
+let mem = null;
+function load() {
+  try { const r = localStorage.getItem(KEY); if (r) return JSON.parse(r); } catch (e) {}
+  return mem || { template: DEFAULT_TEMPLATE, projects: [], currentId: null };
+}
+function save() { mem = state; try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} scheduleBackup(); }
+let state = load();
+let activeSection = 0;
+
+const uid = () => Math.random().toString(36).slice(2, 10);
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// Build a tracked item from a template question (deep-copies hints/follow-ups).
+function newItem(q, extra = {}) {
+  return Object.assign({
+    id: uid(), text: q.text,
+    hints: (q.hints || []).map(h => ({ ...h })),
+    followups: (q.followups || []).map(f => ({ ...f, value: '' })),
+    answer: '', status: 'todo', owner: '', notes: ''
+  }, extra);
+}
+
+// ---------- markdown template parsing ----------
+function parseTemplate(md) {
+  const sections = []; const stack = [];
+  let curSection = null, curItem = null, curGroup = false;
+  const attach = (item, text, level) => {
+    const f = text.match(/^if\s+(yes|no|unsure)\s*[:\-]\s*(.+)$/i);
+    if (f) item.followups.push({ when: f[1].toLowerCase(), text: f[2], value: '' });
+    else item.hints.push({ text, level });
+  };
+  for (const raw of md.split('\n')) {
+    const m = raw.match(/^(\s*)[*\-+]\s+(?:\[.\]\s+)?(.*\S)\s*$/);
+    if (!m) continue;
+    const indent = m[1].replace(/\t/g, '    ').length;
+    while (stack.length && stack[stack.length-1] >= indent) stack.pop();
+    const depth = stack.length; stack.push(indent);
+    const text = m[2];
+    if (depth === 0) { curSection = { title: text, items: [] }; sections.push(curSection); curItem = null; curGroup = false; }
+    else {
+      if (!curSection) { curSection = { title: 'General', items: [] }; sections.push(curSection); }
+      const g = depth === 1 && text.match(/^for each\s+(.+?)\s*:?\s*$/i);
+      if (g) {   // "For each integration:" starts a repeatable group of questions
+        curSection.repeat = { label: g[1], questions: [] }; curGroup = true; curItem = null;
+      } else if (curGroup && depth >= 2) {
+        if (depth === 2 || !curItem) {
+          curItem = { text, hints: [], followups: [] }; curSection.repeat.questions.push(curItem);
+        } else attach(curItem, text, depth - 3);
+      } else if (depth === 1 || !curItem) {
+        curGroup = false;
+        curItem = newItem({ text, hints: [], followups: [] }); curSection.items.push(curItem);
+      } else attach(curItem, text, depth - 2);
+    }
+  }
+  return sections;
+}
+
+// ---------- helpers ----------
+const cur = () => state.projects.find(p => p.id === state.currentId);
+function progress(items) {
+  const counted = items.filter(i => i.status !== 'na');
+  const done = counted.filter(i => i.status === 'done').length;
+  return { done, total: counted.length, pct: counted.length ? Math.round(done / counted.length * 100) : 0 };
+}
+const allItems = p => p.sections.flatMap(s => s.items);
+
+// A repeatable section (e.g. Integrations) is "unanswered" until at least one
+// instance is added, or the user confirms there are none.
+const emptyGroup = s => !!s.repeat && !s.noneConfirmed && !s.items.some(i => i.inst);
+const sectionDone = s => isComplete(s.items) && !emptyGroup(s);
+const projectDone = p => isComplete(allItems(p)) && !p.sections.some(emptyGroup);
+
+// Items in display order: plain items first, then one block per instance.
+function groupedItems(s) {
+  const plain = s.items.filter(i => !i.inst);
+  const groups = [];
+  s.items.filter(i => i.inst).forEach(i => {
+    let g = groups.find(x => x.instId === i.instId);
+    if (!g) { g = { instId: i.instId, name: i.inst, items: [] }; groups.push(g); }
+    g.items.push(i);
+  });
+  return { plain, groups };
+}
+
+// ---------- render ----------
+function renderHeader() {
+  const sel = $('projSel');
+  sel.innerHTML = state.projects.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  sel.style.display = state.projects.length ? '' : 'none';
+  if (cur()) sel.value = cur().id;
+  const has = !!cur();
+  $('exportBtn').disabled = $('delBtn').disabled = !has;
+  resetDelete();
+}
+
+function renderApp() {
+  renderHeader();
+  const p = cur();
+  if (!p) {
+    $('app').innerHTML = `<div class="empty"><h2>No projects yet</h2><p>Create a project to get a fresh copy of your runbook to work through.</p><button class="btn primary" onclick="openNew()">+ New project</button></div>`;
+    return;
+  }
+  if (activeSection >= p.sections.length || activeSection < -1) activeSection = 0;
+  $('app').innerHTML = `<div class="layout"><nav id="nav"></nav><main id="main"></main></div>`;
+  renderNav(); renderMain();
+}
+
+function renderNav() {
+  const p = cur(); const o = progress(allItems(p));
+  $('nav').innerHTML = `
+    <div class="overall"><div class="big">${o.pct}%</div><div class="sub" style="margin:0">${o.done} of ${o.total} complete</div><div class="bar"><i style="width:${o.pct}%"></i></div></div>
+    <button class="navitem review ${activeSection===-1?'active':''}" data-sec="-1">Review open items${issues(p).length ? `<small>${issues(p).length}</small>` : ''}</button>
+    ${p.sections.map((s, i) => { const pr = progress(s.items);
+      return `<button class="navitem ${i===activeSection?'active':''}" data-sec="${i}">${esc(s.title)}<small>${pr.done}/${pr.total}</small></button>`; }).join('')}`;
+  $('nav').querySelectorAll('[data-sec]').forEach(b => b.onclick = () => { activeSection = +b.dataset.sec; renderNav(); renderMain(); });
+}
+
+function issues(p) {
+  const out = [];
+  p.sections.forEach((s, si) => { if (emptyGroup(s)) out.push({ si, id: '', text: `Add each ${s.repeat.label}, or confirm there are none`, why: 'Not answered' });
+    s.items.forEach(it => {
+    if (it.status === 'na') return;
+    const why = [];
+    if (it.status === 'todo') why.push('Not started');
+    if (it.status === 'progress') why.push('In progress');
+    if (it.answer === 'unsure') why.push('Answer unsure');
+    if (activeFups(it).some(f => !f.value.trim())) why.push('Follow-up missing');
+    if (why.length) out.push({ si, id: it.id, text: (it.inst ? it.inst + ': ' : '') + it.text, why: why.join(' · ') });
+  }); });
+  return out;
+}
+
+function renderReview() {
+  const p = cur(); const list = issues(p);
+  if (!list.length) {
+    $('main').innerHTML = `<h2>Review</h2><div class="allclear"><b>Nothing open.</b><br>Every question is done or marked N/A, with no unsure answers or missing follow-ups.</div>`;
+    return;
+  }
+  let html = `<h2>Review</h2><div class="sub">${list.length} item${list.length===1?'':'s'} still need attention. Click one to jump to it.</div>`;
+  p.sections.forEach((s, si) => {
+    const rows = list.filter(x => x.si === si);
+    if (!rows.length) return;
+    html += `<div class="rv-sec">${esc(s.title)}</div>` + rows.map(r =>
+      `<div class="rv-item" data-si="${si}" data-id="${r.id}"><span>${esc(r.text)}</span><span class="why">${r.why}</span></div>`).join('');
+  });
+  $('main').innerHTML = html;
+  $('main').querySelectorAll('.rv-item').forEach(el => el.onclick = () => {
+    activeSection = +el.dataset.si; renderNav(); renderMain();
+    const t = el.dataset.id && document.querySelector(`.item[data-id="${el.dataset.id}"]`);
+    if (t) { t.scrollIntoView({ block: 'center' }); t.style.outline = '2px solid var(--accent)'; setTimeout(() => t.style.outline = '', 1500); }
+  });
+}
+
+function renderMain() {
+  if (activeSection === -1) return renderReview();
+  const p = cur(); const s = p.sections[activeSection];
+  $('main').innerHTML = `
+    <h2>${esc(s.title)}</h2>
+    <div class="sub">${esc(p.name)}</div>
+    ${s.repeat ? groupsHtml(s) : s.items.map(itemHtml).join('')}
+    <div class="add"><input type="text" id="addQ" placeholder="Add a question to this section (this project only)"><button class="btn" id="addBtn">Add</button></div>`;
+  $('main').querySelectorAll('.item').forEach(wireItem);
+  const add = () => { const v = $('addQ').value.trim(); if (!v) return;
+    s.items.push(newItem({ text: v }, { owner: p.owner || '' })); save(); renderNav(); renderMain(); };
+  $('addBtn').onclick = add; $('addQ').onkeydown = e => { if (e.key === 'Enter') add(); };
+  if (s.repeat) wireGroups(s, p);
+}
+
+// ---------- repeatable groups (e.g. one block of questions per integration) ----------
+function groupsHtml(s) {
+  const { plain, groups } = groupedItems(s);
+  const label = esc(s.repeat.label);
+  let html = plain.map(itemHtml).join('');
+  html += groups.map(g => `<div class="grp" data-g="${g.instId}">
+      <div class="grp-head"><h3>${esc(g.name)}</h3><span class="lbl">${progress(g.items).done}/${progress(g.items).total}</span><span class="spacer"></span>
+      <button class="btn danger rm-g" data-g="${g.instId}">Remove</button></div>
+      ${g.items.map(itemHtml).join('')}</div>`).join('');
+  html += `<div class="grp-add"><b>Add ${label}</b>
+      <div class="add" style="margin-top:6px"><input type="text" id="addG" placeholder="Name, e.g. Billing API (server)"><button class="btn primary" id="addGBtn">Add ${label}</button></div>
+      ${groups.length ? '' : `<label class="none"><input type="checkbox" id="noneChk" ${s.noneConfirmed ? 'checked' : ''}> This project has no ${label}s</label>`}
+    </div>`;
+  return html;
+}
+function wireGroups(s, p) {
+  const addG = () => {
+    const name = $('addG').value.trim(); if (!name) return;
+    const instId = uid();
+    s.repeat.questions.forEach(q => s.items.push(newItem(q, { inst: name, instId, owner: p.owner || '' })));
+    s.noneConfirmed = false; save(); renderNav(); renderMain();
+  };
+  $('addGBtn').onclick = addG; $('addG').onkeydown = e => { if (e.key === 'Enter') addG(); };
+  if ($('noneChk')) $('noneChk').onchange = e => { s.noneConfirmed = e.target.checked; save(); renderNav(); };
+  $('main').querySelectorAll('.rm-g').forEach(b => b.onclick = () => {
+    if (b.dataset.armed !== '1') {   // two-step confirm
+      b.dataset.armed = '1'; b.textContent = 'Click again to remove'; b.classList.add('armed');
+      setTimeout(() => { if (b.isConnected) { b.dataset.armed = ''; b.textContent = 'Remove'; b.classList.remove('armed'); } }, 3000);
+      return;
+    }
+    s.items = s.items.filter(i => i.instId !== b.dataset.g); save(); renderNav(); renderMain();
+  });
+}
+
+function itemHtml(it) {
+  return `<div class="item s-${it.status}" data-id="${it.id}">
+    <div class="q">${esc(it.text)}</div>
+    ${it.hints.length ? `<ul class="hints">${it.hints.map(h => `<li style="margin-left:${h.level*16}px">${esc(h.text)}</li>`).join('')}</ul>` : ''}
+    <div class="row">
+      <span class="lbl">Answer</span>
+      <div class="ans">${ANSWERS.map(([k,l]) => `<button data-a="${k}" class="${it.answer===k?'on':''}">${l}</button>`).join('')}</div>
+    </div>
+    <div class="fups-wrap">${fupsHtml(it)}</div>
+    <div class="row">
+      <span class="lbl">Status</span>
+      <div class="seg">${STATUSES.map(([k,l]) => `<button data-s="${k}" class="${it.status===k?'on':''}">${l}</button>`).join('')}</div>
+      <input type="text" class="owner" placeholder="Owner" value="${esc(it.owner)}">
+      <textarea class="notes" rows="1" placeholder="Notes, decisions, links">${esc(it.notes)}</textarea>
+    </div></div>`;
+}
+
+function activeFups(it) { return (it.followups || []).filter(f => f.when === it.answer); }
+function fupsHtml(it) {
+  const fs = activeFups(it);
+  if (!fs.length) return '';
+  return `<div class="fups">${fs.map((f, i) => `<div class="fup ${f.value.trim() ? '' : 'missing'}" data-fi="${(it.followups).indexOf(f)}"><span>${esc(f.text)}</span><input type="text" value="${esc(f.value)}" placeholder="Answer"></div>`).join('')}</div>`;
+}
+function wireFups(el, it) {
+  el.querySelectorAll('.fup').forEach(row => {
+    const f = it.followups[+row.dataset.fi];
+    row.querySelector('input').oninput = e => { f.value = e.target.value; row.classList.toggle('missing', !f.value.trim()); save(); renderNav(); };
+  });
+}
+function grow(t) { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; }
+function wireItem(el) {
+  const it = cur().sections[activeSection].items.find(i => i.id === el.dataset.id);
+  el.querySelectorAll('[data-s]').forEach(b => b.onclick = () => {
+    const was = it.status;
+    const proj = cur(), sec = proj.sections[activeSection];
+    const secWas = sectionDone(sec), projWas = projectDone(proj);
+    it.status = b.dataset.s; save();
+    const projNow = projectDone(proj), secNow = sectionDone(sec);
+    if (projNow && !projWas) celebrateProject(proj.name);
+    else if (secNow && !secWas) celebrateSection(sec.title);
+    else if (it.status === 'done' && was !== 'done') {
+      const r = b.getBoundingClientRect();
+      confetti(r.left + r.width / 2, r.top + r.height / 2);
+    }
+    el.className = 'item s-' + it.status;
+    el.querySelectorAll('[data-s]').forEach(x => x.classList.toggle('on', x.dataset.s === it.status));
+    renderNav();
+  });
+  el.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
+    it.answer = it.answer === b.dataset.a ? '' : b.dataset.a; save();   // click again to clear
+    el.querySelectorAll('[data-a]').forEach(x => x.classList.toggle('on', x.dataset.a === it.answer));
+    el.querySelector('.fups-wrap').innerHTML = fupsHtml(it); wireFups(el, it); renderNav();
+  });
+  wireFups(el, it);
+  el.querySelector('.owner').oninput = e => { it.owner = e.target.value; save(); };
+  const n = el.querySelector('.notes');
+  n.oninput = e => { it.notes = e.target.value; save(); grow(n); };
+  grow(n);
+}
+
+// ---------- confetti ----------
+const fx = document.createElement('canvas');
+fx.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50';
+document.body.appendChild(fx);
+const fxc = fx.getContext('2d');
+let bits = [], fxRunning = false;
+const COLORS = ['#2f5d50', '#b7791f', '#e76f51', '#4c8bf5', '#e9c46a', '#8e6bbf'];
+
+const reduceMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function confetti(x, y, count = 60, full = false) {
+  if (reduceMotion()) return;
+  for (let i = 0; i < count; i++) {
+    const a = full ? Math.random() * Math.PI * 2 : -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.2;
+    const v = (full ? 3 : 4) + Math.random() * (full ? 8 : 7);
+    bits.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, w: 5 + Math.random() * 5, h: 3 + Math.random() * 4,
+      rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.4, c: COLORS[i % COLORS.length], life: 0 });
+  }
+  if (!fxRunning) { fxRunning = true; requestAnimationFrame(tick); }
+}
+function tick() {
+  fx.width = innerWidth; fx.height = innerHeight;
+  fxc.clearRect(0, 0, fx.width, fx.height);
+  bits = bits.filter(b => b.life < 90 && b.y < fx.height + 20);
+  for (const b of bits) {
+    b.vy += 0.25; b.vx *= 0.99; b.x += b.vx; b.y += b.vy; b.rot += b.vr; b.life++;
+    fxc.save(); fxc.globalAlpha = Math.min(1, (90 - b.life) / 30);
+    fxc.translate(b.x, b.y); fxc.rotate(b.rot); fxc.fillStyle = b.c; fxc.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); fxc.restore();
+  }
+  if (bits.length) requestAnimationFrame(tick); else { fxRunning = false; fxc.clearRect(0, 0, fx.width, fx.height); }
+}
+
+// ---------- celebrations ----------
+function showToast(msg) {
+  let t = $('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.className = 'show';
+  clearTimeout(showToast.t); showToast.t = setTimeout(() => t.className = '', 3200);
+}
+function celebrateSection(title) {
+  showToast(`${title} complete`);
+  for (let i = 0; i < 3; i++) setTimeout(() => confetti(innerWidth * (0.3 + 0.2 * i), innerHeight * 0.35, 70), i * 180);
+}
+function celebrateProject(name) {
+  showToast(`${name}: every question covered`);
+  for (let i = 0; i < 8; i++) setTimeout(() =>
+    confetti(innerWidth * (0.1 + Math.random() * 0.8), innerHeight * (0.2 + Math.random() * 0.3), 90, true), i * 260);
+}
+const isComplete = items => { const p = progress(items); return p.total > 0 && p.done === p.total; };
+
+// ---------- projects ----------
+function openNew() { $('npName').value = ''; $('newDlg').showModal(); $('npName').focus(); }
+$('newBtn').onclick = openNew;
+$('npCreate').onclick = () => {
+  const name = $('npName').value.trim() || 'Untitled project';
+  const owner = $('npOwner').value.trim();
+  const sections = parseTemplate(state.template);
+  if (owner) sections.forEach(s => s.items.forEach(i => i.owner = owner));
+  const p = { id: uid(), name, owner, created: new Date().toISOString().slice(0,10), sections };
+  state.projects.push(p); state.currentId = p.id; activeSection = 0; save();
+  $('newDlg').close(); renderApp();
+};
+$('npName').onkeydown = e => { if (e.key === 'Enter') $('npCreate').click(); };
+$('projSel').onchange = e => { state.currentId = e.target.value; activeSection = 0; save(); renderApp(); };
+
+let delArmed = false;
+function resetDelete() { delArmed = false; $('delBtn').textContent = 'Delete project'; $('delBtn').classList.remove('armed'); }
+$('delBtn').onclick = () => {
+  if (!delArmed) { delArmed = true; $('delBtn').textContent = 'Click again to confirm'; $('delBtn').classList.add('armed'); setTimeout(resetDelete, 3000); return; }
+  state.projects = state.projects.filter(p => p.id !== state.currentId);
+  state.currentId = state.projects.length ? state.projects[0].id : null; save(); renderApp();
+};
+
+// ---------- template editor ----------
+$('tplBtn').onclick = () => { $('tplText').value = state.template; $('tplDlg').showModal(); };
+$('tplSave').onclick = () => { state.template = $('tplText').value; save(); $('tplDlg').close(); };
+$('tplReset').onclick = () => { $('tplText').value = DEFAULT_TEMPLATE; };
+
+// ---------- export ----------
+const MARK = { todo:' ', progress:'/', done:'x', na:'-' };
+function toMarkdown(p) {
+  let out = `# ${p.name}\n\n`;
+  if (p.owner) out += `Owner: ${p.owner}\n`;
+  out += `Created: ${p.created}\n\n`;
+  for (const s of p.sections) {
+    out += `## ${s.title}\n\n`;
+    const { plain, groups } = groupedItems(s);
+    const blocks = [{ heading: '', items: plain }, ...groups.map(g => ({ heading: g.name, items: g.items }))];
+    if (s.repeat && !groups.length) out += s.noneConfirmed ? `_No ${s.repeat.label}s for this project._\n\n` : `_No ${s.repeat.label}s recorded yet._\n\n`;
+    for (const blk of blocks) {
+    if (blk.heading) out += `### ${blk.heading}\n\n`;
+    for (const i of blk.items) {
+      out += `- [${MARK[i.status]}] ${i.text}`;
+      if (i.owner) out += ` (@${i.owner})`;
+      if (i.answer) out += ` — **${i.answer[0].toUpperCase() + i.answer.slice(1)}**`;
+      out += '\n';
+      for (const f of activeFups(i)) out += `  - ${f.text}: ${f.value.trim() || '_TBC_'}\n`;
+      for (const h of i.hints) out += `${'  '.repeat(h.level + 1)}- ${h.text}\n`;
+      if (i.notes.trim()) out += i.notes.trim().split('\n').map(l => `  > ${l}`).join('\n') + '\n';
+    }
+    if (blk.items.length) out += '\n';
+    }
+  }
+  return out;
+}
+$('exportBtn').onclick = () => { $('expText').value = toMarkdown(cur()); $('expMsg').textContent = ''; $('expDlg').showModal(); };
+$('expCopy').onclick = async () => {
+  try { await navigator.clipboard.writeText($('expText').value); $('expMsg').textContent = 'Copied'; }
+  catch (e) { $('expText').select(); $('expMsg').textContent = 'Press Cmd/Ctrl+C to copy'; }
+};
+$('expDl').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([$('expText').value], { type: 'text/markdown' }));
+  a.download = (cur().name.replace(/[^\w\- ]+/g, '').trim() || 'project') + '.md';
+  document.body.appendChild(a); a.click(); a.remove();
+  $('expMsg').textContent = 'Download started (or copy instead)';
+};
+
+// ---------- backup / restore ----------
+const bkJson = () => JSON.stringify({ app: 'project-runbook', version: 1, template: state.template, projects: state.projects }, null, 2);
+$('bkBtn').onclick = () => { $('bkText').value = bkJson(); $('bkMsg').textContent = ''; $('bkTpl').checked = false; $('bkDlg').showModal(); };
+$('bkCopy').onclick = async () => {
+  $('bkText').value = bkJson();
+  try { await navigator.clipboard.writeText($('bkText').value); $('bkMsg').textContent = 'Copied'; }
+  catch (e) { $('bkText').select(); $('bkMsg').textContent = 'Press Cmd/Ctrl+C to copy'; }
+};
+$('bkDl').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([bkJson()], { type: 'application/json' }));
+  a.download = 'project-runbook-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  $('bkMsg').textContent = 'Download started (or copy instead)';
+};
+$('bkFile').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader(); r.onload = () => { $('bkText').value = r.result; $('bkMsg').textContent = 'File loaded. Click Import.'; }; r.readAsText(f);
+};
+$('bkImport').onclick = () => {
+  let d;
+  try { d = JSON.parse($('bkText').value); } catch (e) { $('bkMsg').textContent = 'That is not valid JSON.'; return; }
+  if (!d || !Array.isArray(d.projects)) { $('bkMsg').textContent = 'No projects found in that data.'; return; }
+  let n = 0;
+  for (const p of d.projects) {
+    if (!p || !p.id || !Array.isArray(p.sections)) continue;
+    const i = state.projects.findIndex(x => x.id === p.id);
+    if (i >= 0) state.projects[i] = p; else state.projects.push(p);
+    n++;
+  }
+  if ($('bkTpl').checked && typeof d.template === 'string') state.template = d.template;
+  if (!cur() && state.projects.length) state.currentId = state.projects[0].id;
+  save(); renderApp();
+  $('bkMsg').textContent = `Imported ${n} project${n === 1 ? '' : 's'}.`;
+};
+
+// ---------- automatic backup to a file (File System Access API: Chrome / Edge) ----------
+const canAutoBackup = typeof window.showSaveFilePicker === 'function';
+let backupHandle = null, backupTimer = null, backupState = 'off', lastBackup = null, backupErr = '';
+// backupState: off | ok | needs-permission | error
+
+const idbOpen = () => new Promise((res, rej) => {
+  const r = indexedDB.open('project-runbook', 1);
+  r.onupgradeneeded = () => r.result.createObjectStore('kv');
+  r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+});
+async function idbDo(mode, fn) {
+  const db = await idbOpen();
+  return new Promise((res, rej) => { const q = fn(db.transaction('kv', mode).objectStore('kv')); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); });
+}
+
+function renderBackupStatus() {
+  const b = $('bkStatus'), t = $('autoText');
+  const hhmm = lastBackup ? lastBackup.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+  if (!canAutoBackup) {
+    b.style.display = 'none';
+    t.textContent = 'Not available in this view. Open the standalone file in Chrome or Edge to use automatic backup.';
+    $('bkSetup').style.display = $('bkStop').style.display = 'none';
+    return;
+  }
+  b.style.display = '';
+  $('bkSetup').style.display = ''; $('bkStop').style.display = backupHandle ? '' : 'none';
+  $('bkSetup').textContent = backupHandle ? 'Change backup file…' : 'Choose backup file…';
+  const label = { off: 'Auto-backup: off', ok: 'Backed up ' + hhmm, 'needs-permission': 'Reconnect backup', error: 'Backup failed - retry' }[backupState];
+  b.textContent = label; b.className = 'btn' + (backupState === 'ok' ? ' ok' : backupState === 'off' ? '' : ' warnbtn');
+  t.textContent = {
+    off: 'Pick a file once (for example in your Obsidian vault or Documents). Every change is then saved to it automatically.',
+    ok: `Saving every change to "${backupHandle && backupHandle.name}". Last written ${hhmm}.`,
+    'needs-permission': 'Chrome needs your permission again after a restart. Click "Reconnect backup" in the header (or here).',
+    error: 'The last write failed' + (backupErr ? ` (${backupErr})` : '') + '. Click the header button to retry.'
+  }[backupState];
+}
+
+async function writeBackup() {
+  if (!backupHandle || !state.projects.length) return;   // never overwrite a backup with empty data
+  try {
+    const w = await backupHandle.createWritable();
+    await w.write(bkJson()); await w.close();
+    backupState = 'ok'; lastBackup = new Date(); backupErr = '';
+  } catch (e) { backupState = 'error'; backupErr = e.name; }
+  renderBackupStatus();
+}
+function scheduleBackup() {
+  if (!backupHandle || (backupState !== 'ok' && backupState !== 'error')) return;
+  clearTimeout(backupTimer); backupTimer = setTimeout(writeBackup, 1500);
+}
+
+// If local data is empty (e.g. storage was cleared), pull projects back from the backup file.
+async function restoreFromHandle() {
+  const txt = await (await backupHandle.getFile()).text();
+  if (!txt.trim()) return;
+  const d = JSON.parse(txt);
+  if (!d || !Array.isArray(d.projects)) return;
+  state.projects = d.projects.filter(p => p && p.id && Array.isArray(p.sections));
+  if (typeof d.template === 'string') state.template = d.template;
+  state.currentId = state.projects.length ? state.projects[0].id : null;
+  save(); renderApp();
+  showToast(`Restored ${state.projects.length} project${state.projects.length === 1 ? '' : 's'} from backup`);
+}
+async function backupConnected() {
+  backupState = 'ok';
+  try { if (!state.projects.length) await restoreFromHandle(); else await writeBackup(); }
+  catch (e) { backupState = 'error'; backupErr = e.name; }
+  renderBackupStatus();
+}
+
+$('bkSetup').onclick = async () => {
+  try {
+    const h = await showSaveFilePicker({ suggestedName: 'project-runbook-backup.json', types: [{ description: 'JSON backup', accept: { 'application/json': ['.json'] } }] });
+    backupHandle = h;
+    try { await idbDo('readwrite', s => s.put(h, 'handle')); } catch (e) {}
+    await backupConnected();
+  } catch (e) {
+    if (e.name !== 'AbortError') { $('autoText').textContent = 'Could not set up auto-backup here: ' + (e.message || e.name) + '. Try the standalone copy in Chrome.'; }
+  }
+};
+$('bkStop').onclick = async () => {
+  backupHandle = null; backupState = 'off'; clearTimeout(backupTimer);
+  try { await idbDo('readwrite', s => s.delete('handle')); } catch (e) {}
+  renderBackupStatus();
+};
+$('bkStatus').onclick = async () => {
+  if (!backupHandle) { $('bkBtn').click(); return; }
+  try {
+    const perm = await backupHandle.requestPermission({ mode: 'readwrite' });
+    if (perm === 'granted') await backupConnected(); else { backupState = 'needs-permission'; renderBackupStatus(); }
+  } catch (e) { backupState = 'error'; backupErr = e.name; renderBackupStatus(); }
+};
+$('bkBtn').addEventListener('click', renderBackupStatus);
+
+(async () => {
+  if (canAutoBackup) {
+    try {
+      const h = await idbDo('readonly', s => s.get('handle'));
+      if (h) {
+        backupHandle = h;
+        if ((await h.queryPermission({ mode: 'readwrite' })) === 'granted') await backupConnected();
+        else backupState = 'needs-permission';
+      }
+    } catch (e) {}
+  }
+  renderBackupStatus();
+})();
+
+// ---------- theme ----------
+const THEME_KEY = 'project-runbook-theme';
+let theme = 'light';
+try { theme = localStorage.getItem(THEME_KEY) || 'light'; } catch (e) {}
+function applyTheme() {
+  document.documentElement.dataset.theme = theme;
+  $('themeBtn').textContent = theme === 'dark' ? 'Light theme' : 'Dark theme';
+}
+$('themeBtn').onclick = () => {
+  theme = theme === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+  applyTheme();
+};
+applyTheme();
+
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = () => b.closest('dialog').close());
+renderApp();
+</script>
+</body>
+</html>
